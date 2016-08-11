@@ -22,7 +22,8 @@ import org.jboss.migration.core.ServerMigrationTask;
 import org.jboss.migration.core.ServerMigrationTaskContext;
 import org.jboss.migration.core.ServerMigrationTaskName;
 import org.jboss.migration.core.ServerMigrationTaskResult;
-import org.jboss.migration.wfly10.standalone.WildFly10StandaloneServer;
+import org.jboss.migration.eap6.to.eap7.standalone.EAP6ToEAP7StandaloneConfigFileManagementInterfacesMigration;
+import org.jboss.migration.wfly10.config.standalone.management.WildFly10StandaloneServer;
 
 import static org.jboss.as.controller.PathAddress.pathAddress;
 import static org.jboss.as.controller.PathElement.pathElement;

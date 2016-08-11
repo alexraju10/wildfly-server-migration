@@ -18,9 +18,14 @@ package org.jboss.migration.wfly8.to.wfly10;
 import org.jboss.migration.core.ServerMigrationTaskContext;
 import org.jboss.migration.core.ServerMigrationTaskResult;
 import org.jboss.migration.wfly10.WildFly10Server;
-import org.jboss.migration.wfly10.full.WildFly10FullServerMigration;
-import org.jboss.migration.wfly10.standalone.config.WildFly10StandaloneConfigFilesMigration;
+import org.jboss.migration.wfly10.config.domain.WildFly10DomainConfigFilesMigration;
+import org.jboss.migration.wfly10.config.standalone.WildFly10StandaloneConfigFilesMigration;
+import org.jboss.migration.wfly10.dist.full.WildFly10FullServerMigration;
 import org.jboss.migration.wfly8.WildFly8Server;
+import org.jboss.migration.wfly8.to.wfly10.domain.WildFly8ToWildFly10FullDomainConfigFileMigration;
+import org.jboss.migration.wfly8.to.wfly10.domain.WildFly8ToWildFly10FullDomainMigration;
+import org.jboss.migration.wfly8.to.wfly10.standalone.WildFly8ToWildFly10FullStandaloneConfigFileMigration;
+import org.jboss.migration.wfly8.to.wfly10.standalone.WildFly8ToWildFly10FullStandaloneMigration;
 
 /**
  * Server migration, from WildFly 8 to WildFly 10.
@@ -29,14 +34,17 @@ import org.jboss.migration.wfly8.WildFly8Server;
 public class WildFly8ToWildFly10FullServerMigration implements WildFly10FullServerMigration<WildFly8Server> {
 
     private final WildFly8ToWildFly10FullStandaloneMigration standaloneMigration;
+    private final WildFly8ToWildFly10FullDomainMigration domainMigration;
 
     public WildFly8ToWildFly10FullServerMigration() {
         standaloneMigration = new WildFly8ToWildFly10FullStandaloneMigration(new WildFly10StandaloneConfigFilesMigration<WildFly8Server>(new WildFly8ToWildFly10FullStandaloneConfigFileMigration()));
+        domainMigration = new WildFly8ToWildFly10FullDomainMigration(new WildFly10DomainConfigFilesMigration<>(new WildFly8ToWildFly10FullDomainConfigFileMigration()));
     }
 
     @Override
     public ServerMigrationTaskResult run(final WildFly8Server source, final WildFly10Server target, ServerMigrationTaskContext context) {
         context.execute(standaloneMigration.getServerMigrationTask(source, target));
+        context.execute(domainMigration.getServerMigrationTask(source, target));
         return ServerMigrationTaskResult.SUCCESS;
     }
 

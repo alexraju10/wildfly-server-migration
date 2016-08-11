@@ -19,8 +19,13 @@ import org.jboss.migration.core.ServerMigrationTaskContext;
 import org.jboss.migration.core.ServerMigrationTaskResult;
 import org.jboss.migration.eap.EAP6Server;
 import org.jboss.migration.eap.EAP7ServerMigration;
+import org.jboss.migration.eap6.to.eap7.domain.EAP6ToEAP7DomainConfigFileMigration;
+import org.jboss.migration.eap6.to.eap7.domain.EAP6ToEAP7DomainMigration;
+import org.jboss.migration.eap6.to.eap7.standalone.EAP6ToEAP7StandaloneConfigFileMigration;
+import org.jboss.migration.eap6.to.eap7.standalone.EAP6ToEAP7StandaloneMigration;
 import org.jboss.migration.wfly10.WildFly10Server;
-import org.jboss.migration.wfly10.standalone.config.WildFly10StandaloneConfigFilesMigration;
+import org.jboss.migration.wfly10.config.domain.WildFly10DomainConfigFilesMigration;
+import org.jboss.migration.wfly10.config.standalone.WildFly10StandaloneConfigFilesMigration;
 
 /**
  * Server migration, from EAP 6 to EAP 7.
@@ -29,14 +34,17 @@ import org.jboss.migration.wfly10.standalone.config.WildFly10StandaloneConfigFil
 public class EAP6ToEAP7ServerMigration implements EAP7ServerMigration<EAP6Server> {
 
     private final EAP6ToEAP7StandaloneMigration standaloneMigration;
+    private final EAP6ToEAP7DomainMigration domainMigration;
 
     public EAP6ToEAP7ServerMigration() {
         standaloneMigration = new EAP6ToEAP7StandaloneMigration(new WildFly10StandaloneConfigFilesMigration<EAP6Server>(new EAP6ToEAP7StandaloneConfigFileMigration()));
+        domainMigration = new EAP6ToEAP7DomainMigration(new WildFly10DomainConfigFilesMigration<>(new EAP6ToEAP7DomainConfigFileMigration()));
     }
 
     @Override
     public ServerMigrationTaskResult run(final EAP6Server source, final WildFly10Server target, ServerMigrationTaskContext context) {
         context.execute(standaloneMigration.getServerMigrationTask(source, target));
+        context.execute(domainMigration.getServerMigrationTask(source, target));
         return ServerMigrationTaskResult.SUCCESS;
     }
 

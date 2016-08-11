@@ -13,31 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.migration.eap;
+package org.jboss.migration.wfly10.dist.full;
 
 import org.jboss.migration.core.ProductInfo;
 import org.jboss.migration.core.Server;
 import org.jboss.migration.core.env.MigrationEnvironment;
+import org.jboss.migration.wfly10.WildFly10Server;
 import org.jboss.migration.wfly10.WildFly10ServerMigration;
-import org.jboss.migration.wfly10.dist.full.WildFly10FullServer;
 
 import java.nio.file.Path;
 
 /**
- * The EAP 7 {@link org.jboss.migration.core.Server}
  * @author emmartins
  */
-public class EAP7Server extends WildFly10FullServer {
-    public EAP7Server(String migrationName, ProductInfo productInfo, Path baseDir, MigrationEnvironment migrationEnvironment) {
+public class WildFly10FullServer extends WildFly10Server {
+
+    public WildFly10FullServer(String migrationName, ProductInfo productInfo, Path baseDir, MigrationEnvironment migrationEnvironment) {
         super(migrationName, productInfo, baseDir, migrationEnvironment);
     }
 
-    @Override
     protected WildFly10ServerMigration getMigration(Server source) {
-        WildFly10ServerMigration serverMigration = EAP7ServerMigrations.getMigrationFrom(source);
-        if (serverMigration == null) {
-            serverMigration = super.getMigration(source);
-        }
-        return serverMigration;
+        return WildFly10FullServerMigrations.getMigrationFrom(source);
     }
 }

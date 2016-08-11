@@ -1,0 +1,268 @@
+/*
+ * Copyright 2016 Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.jboss.migration.wfly8.to.wfly10.subsystem;
+
+import org.jboss.migration.wfly10.config.WildFly10ConfigFileSubsystemsMigration;
+import org.jboss.migration.wfly10.config.subsystem.AddSubsystem;
+import org.jboss.migration.wfly10.config.subsystem.WildFly10Extension;
+import org.jboss.migration.wfly10.config.subsystem.WildFly10ExtensionBuilder;
+import org.jboss.migration.wfly10.config.subsystem.WildFly10ExtensionNames;
+import org.jboss.migration.wfly10.config.subsystem.WildFly10LegacyExtensionBuilder;
+import org.jboss.migration.wfly10.config.subsystem.WildFly10SubsystemNames;
+import org.jboss.migration.wfly10.config.subsystem.infinispan.AddServerCache;
+import org.jboss.migration.wfly10.config.subsystem.infinispan.FixHibernateCacheModuleName;
+import org.jboss.migration.wfly10.config.subsystem.jberet.AddBatchJBeretSubsystem;
+import org.jboss.migration.wfly10.config.subsystem.securitymanager.AddSecurityManagerSubsystem;
+import org.jboss.migration.wfly10.config.subsystem.singleton.AddSingletonSubsystem;
+import org.jboss.migration.wfly8.WildFly8Server;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * @author emmartins
+ */
+public class WildFly8ToWildFly10ConfigFileSubsystemsMigration extends WildFly10ConfigFileSubsystemsMigration<WildFly8Server> {
+
+    public static final List<WildFly10Extension> SUPPORTED_EXTENSIONS = initSupportedExtensions();
+
+    private static List<WildFly10Extension> initSupportedExtensions() {
+
+        List<WildFly10Extension> supportedExtensions = new ArrayList<>();
+
+        // note: order may be relevant since extension/subsystem migration process order follows it
+
+        // jacorb is legacy
+        supportedExtensions.add(new WildFly10LegacyExtensionBuilder()
+                .setName(WildFly10ExtensionNames.JACORB)
+                .addMigratedSubsystem(WildFly10SubsystemNames.JACORB)
+                .build()
+        );
+
+        // messaging is legacy
+        supportedExtensions.add(new WildFly10LegacyExtensionBuilder()
+                .setName(WildFly10ExtensionNames.MESSAGING)
+                .addMigratedSubsystem(WildFly10SubsystemNames.MESSAGING)
+                .build()
+        );
+
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.INFINISPAN)
+                .addUpdatedSubsystem(WildFly10SubsystemNames.INFINISPAN, AddServerCache.INSTANCE, FixHibernateCacheModuleName.INSTANCE)
+                .build()
+        );
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.JGROUPS)
+                .addSupportedSubsystem(WildFly10SubsystemNames.JGROUPS)
+                .build()
+        );
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.CONNECTOR)
+                .addSupportedSubsystem(WildFly10SubsystemNames.DATASOURCES)
+                .addSupportedSubsystem(WildFly10SubsystemNames.JCA)
+                .addSupportedSubsystem(WildFly10SubsystemNames.RESOURCE_ADAPTERS)
+                .build()
+        );
+
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.DEPLOYMENT_SCANNER)
+                .addSupportedSubsystem(WildFly10SubsystemNames.DEPLOYMENT_SCANNER)
+                .build()
+        );
+
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.EE)
+                .addSupportedSubsystem(WildFly10SubsystemNames.EE)
+                .build()
+        );
+
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.EJB3)
+                .addSupportedSubsystem(WildFly10SubsystemNames.EJB3)
+                .build()
+        );
+
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.JAXRS)
+                .addSupportedSubsystem(WildFly10SubsystemNames.JAXRS)
+                .build()
+        );
+
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.JDR)
+                .addSupportedSubsystem(WildFly10SubsystemNames.JDR)
+                .build()
+        );
+
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.JMX)
+                .addSupportedSubsystem(WildFly10SubsystemNames.JMX)
+                .build()
+        );
+
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.JPA)
+                .addSupportedSubsystem(WildFly10SubsystemNames.JPA)
+                .build()
+        );
+
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.JSF)
+                .addSupportedSubsystem(WildFly10SubsystemNames.JSF)
+                .build()
+        );
+
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.JSR77)
+                .addSupportedSubsystem(WildFly10SubsystemNames.JSR77)
+                .build()
+        );
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.LOGGING)
+                .addSupportedSubsystem(WildFly10SubsystemNames.LOGGING)
+                .build()
+        );
+
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.MAIL)
+                .addSupportedSubsystem(WildFly10SubsystemNames.MAIL)
+                .build()
+        );
+
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.MODCLUSTER)
+                .addSupportedSubsystem(WildFly10SubsystemNames.MODCLUSTER)
+                .build()
+        );
+
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.NAMING)
+                .addSupportedSubsystem(WildFly10SubsystemNames.NAMING)
+                .build()
+        );
+
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.POJO)
+                .addSupportedSubsystem(WildFly10SubsystemNames.POJO)
+                .build()
+        );
+
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.REMOTING)
+                .addSupportedSubsystem(WildFly10SubsystemNames.REMOTING)
+                .build()
+        );
+
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.SAR)
+                .addSupportedSubsystem(WildFly10SubsystemNames.SAR)
+                .build()
+        );
+
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.SECURITY)
+                .addSupportedSubsystem(WildFly10SubsystemNames.SECURITY)
+                .build()
+        );
+
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.TRANSACTIONS)
+                .addSupportedSubsystem(WildFly10SubsystemNames.TRANSACTIONS)
+                .build()
+        );
+
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.WEBSERVICES)
+                .addSupportedSubsystem(WildFly10SubsystemNames.WEBSERVICES)
+                .build()
+        );
+
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.WELD)
+                .addSupportedSubsystem(WildFly10SubsystemNames.WELD)
+                .build()
+        );
+
+        // batch jberet did not exist in source server, need tasks to create extension and subsystem default config
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.BATCH_JBERET)
+                .addNewSubsystem(WildFly10SubsystemNames.BATCH_JBERET, AddBatchJBeretSubsystem.INSTANCE)
+                .build()
+        );
+
+        // bean-validation did not exist in source server, need tasks to create extension and subsystem default config
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.BEAN_VALIDATION)
+                .addNewSubsystem(WildFly10SubsystemNames.BEAN_VALIDATION, AddSubsystem.INSTANCE)
+                .build()
+        );
+
+        // singleton did not exist in source server, need tasks to create extension and subsystem default config
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.SINGLETON)
+                .addNewSubsystem(WildFly10SubsystemNames.SINGLETON, AddSingletonSubsystem.INSTANCE)
+                .build()
+        );
+
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.IO)
+                .addSupportedSubsystem(WildFly10SubsystemNames.IO)
+                .build()
+        );
+
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.MESSAGING_ACTIVEMQ)
+                .addSupportedSubsystem(WildFly10SubsystemNames.MESSAGING_ACTIVEMQ)
+                .build()
+        );
+
+        // request-controller did not exist in source server, need tasks to create extension and subsystem default config
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.REQUEST_CONTROLLER)
+                .addNewSubsystem(WildFly10SubsystemNames.REQUEST_CONTROLLER, AddSubsystem.INSTANCE)
+                .build()
+        );
+
+        // add new subsystem security manager
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.SECURITY_MANAGER)
+                .addNewSubsystem(WildFly10SubsystemNames.SECURITY_MANAGER, AddSecurityManagerSubsystem.INSTANCE)
+                .build()
+        );
+
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.UNDERTOW)
+                .addSupportedSubsystem(WildFly10SubsystemNames.UNDERTOW)
+                .build()
+        );
+
+        supportedExtensions.add(new WildFly10ExtensionBuilder()
+                .setName(WildFly10ExtensionNames.IIOP_OPENJDK)
+                .addSupportedSubsystem(WildFly10SubsystemNames.IIOP_OPENJDK)
+                .build()
+        );
+
+        return Collections.unmodifiableList(supportedExtensions);
+    }
+
+    public static final WildFly8ToWildFly10ConfigFileSubsystemsMigration INSTANCE = new WildFly8ToWildFly10ConfigFileSubsystemsMigration();
+
+    private WildFly8ToWildFly10ConfigFileSubsystemsMigration() {
+        super(SUPPORTED_EXTENSIONS);
+    }
+}
