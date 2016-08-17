@@ -31,14 +31,11 @@ import org.wildfly.core.embedded.EmbeddedProcessStartException;
 import org.wildfly.core.embedded.HostController;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.jboss.as.controller.PathAddress.pathAddress;
-import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
@@ -46,18 +43,27 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
  */
 public class EmbeddedWildFly10HostController extends AbstractWildFly10ConfigurationManagement implements WildFly10HostController {
 
-    private final String config;
+    private final String domainConfig;
+    private final String hostConfig;
     private HostController hostController;
 
-    public EmbeddedWildFly10HostController(String config, WildFly10Server server) {
+    public EmbeddedWildFly10HostController(String domainConfig, String hostConfig, WildFly10Server server) {
         super(server);
-        this.config = config;
+        this.domainConfig = domainConfig;
+        this.hostConfig = hostConfig;
     }
 
     @Override
     protected ModelControllerClient startConfiguration() {
-        final String[] cmds = {"--domain-config="+config,"--admin-only"};
-        hostController = EmbeddedProcessFactory.createHostController(getServer().getBaseDir().toString(), null, null, cmds);
+        final List<String> cmds = new ArrayList<>();
+        if (domainConfig != null) {
+            cmds.add("--domain-config="+ domainConfig);
+        }
+        if (hostConfig != null) {
+            cmds.add("--host-config="+ hostConfig);
+        }
+        cmds.add("--admin-only");
+        hostController = EmbeddedProcessFactory.createHostController(getServer().getBaseDir().toString(), null, null, cmds.toArray(new String[cmds.size()]));
         try {
             hostController.start();
         } catch (EmbeddedProcessStartException e) {
@@ -105,26 +111,15 @@ public class EmbeddedWildFly10HostController extends AbstractWildFly10Configurat
     }
 
     @Override
-    public List<ModelNode> getSecurityRealms() throws IOException {
-        final ModelNode op = Util.createEmptyOperation(READ_CHILDREN_RESOURCES_OPERATION, pathAddress(pathElement(CORE_SERVICE, MANAGEMENT)));
-        op.get(CHILD_TYPE).set(SECURITY_REALM);
-        op.get(RECURSIVE).set(true);
+    public Set<String> getHosts() throws IOException {
+        final ModelNode op = Util.createEmptyOperation(READ_CHILDREN_NAMES_OPERATION, null);
+        op.get(CHILD_TYPE).set(HOST);
         final ModelNode opResult = executeManagementOperation(op);
-        ServerMigrationLogger.ROOT_LOGGER.debugf("Get security realms Op result %s", opResult.toString());
-        return opResult.get(RESULT).asList();
-    }
-
-    @Override
-    public Path resolvePath(String pathName) throws IOException {
-        final PathAddress address = pathAddress(pathElement(PATH, pathName));
-        final ModelNode op = Util.createEmptyOperation(READ_RESOURCE_OPERATION, address);
-        final ModelNode opResult = executeManagementOperation(op);
-        ServerMigrationLogger.ROOT_LOGGER.debugf("Resolve path Op result %s", opResult.toString());
-        String path = opResult.get(RESULT).get(PATH).asString();
-        if (!opResult.get(RESULT).hasDefined(RELATIVE_TO)) {
-            return Paths.get(path);
-        } else {
-            return resolvePath(opResult.get(RESULT).get(RELATIVE_TO).asString()).resolve(path);
+        ServerMigrationLogger.ROOT_LOGGER.debugf("Get hosts Op result %s", opResult.toString());
+        Set<String> result = new HashSet<>();
+        for (ModelNode resultNode : opResult.get(RESULT).asList()) {
+            result.add(resultNode.asString());
         }
+        return result;
     }
 }

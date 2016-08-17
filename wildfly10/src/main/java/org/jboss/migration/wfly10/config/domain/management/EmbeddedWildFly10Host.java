@@ -14,71 +14,73 @@
  * limitations under the License.
  */
 
-package org.jboss.migration.wfly10.config.standalone.management;
+package org.jboss.migration.wfly10.config.domain.management;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.migration.wfly10.WildFly10Server;
 import org.jboss.migration.wfly10.config.AbstractWildFly10ConfigurationManagement;
 import org.jboss.migration.wfly10.config.securityrealms.AbstractWildFly10SecurityRealmsManagement;
 import org.jboss.migration.wfly10.config.securityrealms.WildFly10SecurityRealmsManagement;
+import org.jboss.migration.wfly10.config.subsystem.AbstractWildFly10ExtensionManagement;
 import org.jboss.migration.wfly10.config.subsystem.AbstractWildFly10SubsystemManagement;
+import org.jboss.migration.wfly10.config.subsystem.WildFly10ExtensionManagement;
 import org.jboss.migration.wfly10.config.subsystem.WildFly10SubsystemManagement;
-import org.wildfly.core.embedded.EmbeddedServerFactory;
-import org.wildfly.core.embedded.ServerStartException;
-import org.wildfly.core.embedded.StandaloneServer;
 
 import java.io.IOException;
 import java.util.Set;
 
 import static org.jboss.as.controller.PathAddress.pathAddress;
 import static org.jboss.as.controller.PathElement.pathElement;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
  * @author emmartins
  */
-public class EmbeddedWildFly10StandaloneServer extends AbstractWildFly10ConfigurationManagement implements WildFly10StandaloneServer {
+public class EmbeddedWildFly10Host extends AbstractWildFly10ConfigurationManagement implements WildFly10Host {
 
-    private final String config;
-    private StandaloneServer standaloneServer;
+    private final String host;
+    private final WildFly10HostController hostController;
     private final WildFly10SubsystemManagement subsystemManagement;
     private final WildFly10SecurityRealmsManagement securityRealmsManagement;
+    private final WildFly10ExtensionManagement extensionManagement;
 
-    public EmbeddedWildFly10StandaloneServer(String config, WildFly10Server server) {
-        super(server);
-        this.config = config;
+    public EmbeddedWildFly10Host(WildFly10HostController hostController, String host) {
+        super(hostController.getServer());
+        this.hostController = hostController;
+        this.host = host;
+        final PathAddress hostPathAddress = pathAddress(pathElement(HOST, host));
+        this.extensionManagement = new AbstractWildFly10ExtensionManagement(this) {
+            @Override
+            public Set<String> getSubsystems() throws IOException {
+                return getSubsystems();
+            }
+            @Override
+            protected PathAddress getParentPathAddress() {
+                return hostPathAddress;
+            }
+        };
         this.subsystemManagement = new AbstractWildFly10SubsystemManagement(this) {
             @Override
             protected PathAddress getParentPathAddress() {
-                return null;
+                return hostPathAddress;
             }
         };
         this.securityRealmsManagement = new AbstractWildFly10SecurityRealmsManagement(this) {
+            private final PathAddress parentPathAddress = hostPathAddress.append(pathElement(CORE_SERVICE, MANAGEMENT));
             @Override
             protected PathAddress getParentPathAddress() {
-                return pathAddress(pathElement(CORE_SERVICE, MANAGEMENT));
+                return parentPathAddress;
             }
         };
     }
 
     @Override
     protected ModelControllerClient startConfiguration() {
-        final String[] cmds = {"--server-config="+config,"--admin-only"};
-        standaloneServer = EmbeddedServerFactory.create(getServer().getBaseDir().toString(), null, null, cmds);
-        try {
-            standaloneServer.start();
-        } catch (ServerStartException e) {
-            throw new RuntimeException(e);
-        }
-        return standaloneServer.getModelControllerClient();
+        return hostController.getModelControllerClient();
     }
 
     @Override
     protected void stopConfiguration() {
-        standaloneServer.stop();
-        standaloneServer = null;
     }
 
     @Override
@@ -94,5 +96,10 @@ public class EmbeddedWildFly10StandaloneServer extends AbstractWildFly10Configur
     @Override
     protected Set<String> getSubsystems() throws IOException {
         return getSubsystemManagement().getSubsystems();
+    }
+
+    @Override
+    public WildFly10ExtensionManagement getExtensionManagement() {
+        return extensionManagement;
     }
 }

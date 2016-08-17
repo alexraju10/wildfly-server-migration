@@ -14,19 +14,13 @@
  * limitations under the License.
  */
 
-package org.jboss.migration.wfly10.config.domain.management;
-
-import org.jboss.migration.wfly10.config.WildFly10ConfigurationManagement;
-import org.jboss.migration.wfly10.config.subsystem.WildFly10SubsystemManagement;
-
-import java.io.IOException;
-import java.util.Set;
+package org.jboss.migration.wfly10.config;
 
 /**
  * @author emmartins
  */
-public interface WildFly10HostController extends WildFly10ConfigurationManagement {
-    WildFly10SubsystemManagement getSubsystemManagement(String profile);
-    Set<String> getProfiles() throws IOException;
-    Set<String> getHosts() throws IOException;
+public class ManagementOperationException extends RuntimeException {
+    public ManagementOperationException(String message) {
+        super(message);
+    }
 }

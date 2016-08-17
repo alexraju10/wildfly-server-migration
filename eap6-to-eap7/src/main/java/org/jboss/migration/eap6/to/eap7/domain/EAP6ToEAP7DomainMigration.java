@@ -22,26 +22,30 @@ import org.jboss.migration.eap.EAP6Server;
 import org.jboss.migration.wfly10.WildFly10Server;
 import org.jboss.migration.wfly10.config.domain.WildFly10DomainConfigFilesMigration;
 import org.jboss.migration.wfly10.config.domain.WildFly10DomainMigration;
+import org.jboss.migration.wfly10.config.domain.WildFly10HostConfigFilesMigration;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Migration of a standalone server, from EAP 6 to EAP 7.
+ * Migration of a domain, from EAP 6 to EAP 7.
  * @author emmartins
  */
 public class EAP6ToEAP7DomainMigration extends WildFly10DomainMigration<EAP6Server> {
 
-    private final WildFly10DomainConfigFilesMigration<EAP6Server> configFilesMigration;
+    private final WildFly10DomainConfigFilesMigration<EAP6Server> domainConfigFilesMigration;
+    private final WildFly10HostConfigFilesMigration<EAP6Server> hostConfigFilesMigration;
 
-    public EAP6ToEAP7DomainMigration(WildFly10DomainConfigFilesMigration<EAP6Server> configFilesMigration) {
-        this.configFilesMigration = configFilesMigration;
+    public EAP6ToEAP7DomainMigration(WildFly10DomainConfigFilesMigration<EAP6Server> domainConfigFilesMigration, WildFly10HostConfigFilesMigration<EAP6Server> hostConfigFilesMigration) {
+        this.domainConfigFilesMigration = domainConfigFilesMigration;
+        this.hostConfigFilesMigration = hostConfigFilesMigration;
     }
 
     @Override
     protected List<ServerMigrationTask> getSubtasks(EAP6Server source, WildFly10Server target, ServerMigrationTaskContext context) {
         List<ServerMigrationTask> subtasks = new ArrayList<>();
-        subtasks.add(configFilesMigration.getServerMigrationTask(source.getDomainDomainConfigs(), target.getDomainConfigurationDir(), target));
+        subtasks.add(domainConfigFilesMigration.getServerMigrationTask(source.getDomainDomainConfigs(), target.getDomainConfigurationDir(), target));
+        subtasks.add(hostConfigFilesMigration.getServerMigrationTask(source.getDomainHostConfigs(), target.getDomainConfigurationDir(), target));
         return subtasks;
     }
 }

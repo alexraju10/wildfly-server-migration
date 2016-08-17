@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package org.jboss.migration.wfly10.config.domain.management;
+package org.jboss.migration.wfly10.config.securityrealms;
 
+import org.jboss.as.controller.PathAddress;
+import org.jboss.dmr.ModelNode;
 import org.jboss.migration.wfly10.config.WildFly10ConfigurationManagement;
-import org.jboss.migration.wfly10.config.subsystem.WildFly10SubsystemManagement;
 
 import java.io.IOException;
 import java.util.Set;
@@ -25,8 +26,9 @@ import java.util.Set;
 /**
  * @author emmartins
  */
-public interface WildFly10HostController extends WildFly10ConfigurationManagement {
-    WildFly10SubsystemManagement getSubsystemManagement(String profile);
-    Set<String> getProfiles() throws IOException;
-    Set<String> getHosts() throws IOException;
+public interface WildFly10SecurityRealmsManagement {
+    WildFly10ConfigurationManagement getConfigurationManagement();
+    ModelNode getSecurityRealm(String name) throws IOException;
+    Set<String> getSecurityRealms() throws IOException;
+    PathAddress getSecurityRealmPathAddress(String name);
 }

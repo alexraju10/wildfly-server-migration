@@ -21,9 +21,11 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.migration.core.logger.ServerMigrationLogger;
+import org.jboss.migration.wfly10.config.ManagementOperationException;
 import org.jboss.migration.wfly10.config.WildFly10ConfigurationManagement;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -56,15 +58,35 @@ public abstract class AbstractWildFly10ExtensionManagement implements WildFly10E
 
     @Override
     public Set<String> getExtensions() throws IOException {
-        final ModelNode op = Util.createEmptyOperation(READ_CHILDREN_NAMES_OPERATION, getParentPathAddress());
-        op.get(CHILD_TYPE).set(EXTENSION);
-        final ModelNode opResult = configurationManagement.executeManagementOperation(op);
-        ServerMigrationLogger.ROOT_LOGGER.debugf("Get Extensions Op result %s", opResult.toString());
-        Set<String> result = new HashSet<>();
-        for (ModelNode resultNode : opResult.get(RESULT).asList()) {
-            result.add(resultNode.asString());
+        try {
+            final ModelNode op = Util.createEmptyOperation(READ_CHILDREN_NAMES_OPERATION, getParentPathAddress());
+            op.get(CHILD_TYPE).set(EXTENSION);
+            final ModelNode opResult = configurationManagement.executeManagementOperation(op);
+            ServerMigrationLogger.ROOT_LOGGER.debugf("Get Extensions Op result %s", opResult.toString());
+            Set<String> result = new HashSet<>();
+            for (ModelNode resultNode : opResult.get(RESULT).asList()) {
+                result.add(resultNode.asString());
+            }
+            return result;
+        } catch (ManagementOperationException e) {
+            try {
+                final ModelNode op = Util.createEmptyOperation(READ_CHILDREN_TYPES_OPERATION, getParentPathAddress());
+                final ModelNode opResult = configurationManagement.executeManagementOperation(op);
+                boolean childrenTypeFound = false;
+                for (ModelNode resultNode : opResult.get(RESULT).asList()) {
+                    if (EXTENSION.equals(resultNode.asString())) {
+                        childrenTypeFound = true;
+                        break;
+                    }
+                }
+                if (!childrenTypeFound) {
+                    return Collections.emptySet();
+                }
+            } catch (Throwable t) {
+                // ignore
+            }
+            throw e;
         }
-        return result;
     }
 
     @Override

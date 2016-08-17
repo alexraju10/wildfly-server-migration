@@ -19,11 +19,8 @@ package org.jboss.migration.eap6.to.eap7.domain;
 import org.jboss.migration.core.ServerMigrationTask;
 import org.jboss.migration.core.ServerPath;
 import org.jboss.migration.eap.EAP6Server;
-import org.jboss.migration.eap6.to.eap7.interfaces.EAP6ToEAP7ConfigFileInterfacesMigration;
-import org.jboss.migration.eap6.to.eap7.subsystem.EAP6ToEAP7ConfigFileSubsystemsMigration;
 import org.jboss.migration.wfly10.WildFly10Server;
-import org.jboss.migration.wfly10.config.domain.WildFly10DomainConfigFileMigration;
-import org.jboss.migration.wfly10.config.domain.WildFly10DomainConfigFileProfilesMigration;
+import org.jboss.migration.wfly10.config.domain.WildFly10HostConfigFileMigration;
 import org.jboss.migration.wfly10.config.domain.management.WildFly10HostController;
 
 import java.nio.file.Path;
@@ -31,25 +28,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Standalone config file migration, from EAP 6 to EAP 7
+ * Host config file migration, from EAP 6 to EAP 7
  * @author emmartins
  */
-public class EAP6ToEAP7DomainConfigFileMigration extends WildFly10DomainConfigFileMigration<EAP6Server> {
+public class EAP6ToEAP7HostConfigFileMigration extends WildFly10HostConfigFileMigration<EAP6Server> {
 
-    private final WildFly10DomainConfigFileProfilesMigration profilesMigration = new WildFly10DomainConfigFileProfilesMigration();
+    private final EAP6ToEAP7HostConfigFileHostsMigration hostsMigration = new EAP6ToEAP7HostConfigFileHostsMigration();
 
     @Override
     protected List<ServerMigrationTask> getXMLConfigurationSubtasks(ServerPath<EAP6Server> sourceConfig, Path targetConfigFilePath, WildFly10Server target) {
         final List<ServerMigrationTask> tasks = new ArrayList<>();
-        tasks.add(EAP6ToEAP7ConfigFileSubsystemsMigration.INSTANCE.getXmlConfigServerMigrationTask(sourceConfig, targetConfigFilePath, target));
         return tasks;
     }
 
     @Override
     protected List<ServerMigrationTask> getManagementResourcesSubtasks(ServerPath<EAP6Server> sourceConfig, Path targetConfigFilePath, WildFly10HostController configurationManagement) {
         final List<ServerMigrationTask> tasks = new ArrayList<>();
-        tasks.add(profilesMigration.getServerMigrationTask(sourceConfig, targetConfigFilePath, configurationManagement, EAP6ToEAP7ConfigFileSubsystemsMigration.INSTANCE));
-        tasks.add(new EAP6ToEAP7ConfigFileInterfacesMigration().getServerMigrationTask(configurationManagement));
+        tasks.add(hostsMigration.getServerMigrationTask(sourceConfig, targetConfigFilePath, configurationManagement));
         return tasks;
     }
 }

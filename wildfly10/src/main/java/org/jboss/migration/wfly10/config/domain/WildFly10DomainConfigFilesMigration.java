@@ -20,7 +20,7 @@ import org.jboss.migration.core.Server;
 import org.jboss.migration.wfly10.config.WildFly10ConfigFilesMigration;
 
 /**
- * Abstract implementation of a domain config file migration.
+ * Implementation of a domain config file migration.
  * @author emmartins
  */
 public class WildFly10DomainConfigFilesMigration<S extends Server> extends WildFly10ConfigFilesMigration<S> {

@@ -18,14 +18,20 @@ package org.jboss.migration.wfly10.config;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
+import org.jboss.migration.core.logger.ServerMigrationLogger;
 import org.jboss.migration.wfly10.WildFly10Server;
 import org.jboss.migration.wfly10.config.subsystem.AbstractWildFly10ExtensionManagement;
 import org.jboss.migration.wfly10.config.subsystem.WildFly10ExtensionManagement;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Set;
 
+import static org.jboss.as.controller.PathAddress.pathAddress;
+import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
@@ -82,9 +88,9 @@ public abstract class AbstractWildFly10ConfigurationManagement implements WildFl
         return server;
     }
 
-    protected void processResult(ModelNode result) {
+    protected void processResult(ModelNode result) throws ManagementOperationException {
         if(!SUCCESS.equals(result.get(OUTCOME).asString())) {
-            throw new RuntimeException(result.get(FAILURE_DESCRIPTION).asString());
+            throw new ManagementOperationException(result.get(FAILURE_DESCRIPTION).asString());
         }
     }
 
@@ -98,6 +104,20 @@ public abstract class AbstractWildFly10ConfigurationManagement implements WildFl
         //ServerMigrationLogger.ROOT_LOGGER.infof("Op result %s", result.toString());
         processResult(result);
         return  result;
+    }
+
+    @Override
+    public Path resolvePath(String pathName) throws IOException {
+        final PathAddress address = pathAddress(pathElement(PATH, pathName));
+        final ModelNode op = Util.createEmptyOperation(READ_RESOURCE_OPERATION, address);
+        final ModelNode opResult = executeManagementOperation(op);
+        ServerMigrationLogger.ROOT_LOGGER.debugf("Resolve path Op result %s", opResult.toString());
+        String path = opResult.get(RESULT).get(PATH).asString();
+        if (!opResult.get(RESULT).hasDefined(RELATIVE_TO)) {
+            return Paths.get(path);
+        } else {
+            return resolvePath(opResult.get(RESULT).get(RELATIVE_TO).asString()).resolve(path);
+        }
     }
 
     @Override

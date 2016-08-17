@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.migration.wfly10.config.standalone;
+
+package org.jboss.migration.wfly10.config.deployments;
 
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
@@ -24,7 +25,7 @@ import org.jboss.migration.core.ServerMigrationTaskContext;
 import org.jboss.migration.core.ServerMigrationTaskName;
 import org.jboss.migration.core.ServerMigrationTaskResult;
 import org.jboss.migration.core.ServerPath;
-import org.jboss.migration.wfly10.config.standalone.management.WildFly10StandaloneServer;
+import org.jboss.migration.wfly10.config.WildFly10ConfigurationManagement;
 
 import java.io.IOException;
 import java.util.List;
@@ -37,7 +38,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
  * Migration logic with respect to the deployments found in a standalone config file being to WildFly 10.
  * @author emmartins
  */
-public class WildFly10StandaloneConfigFileDeploymentsMigration<S extends Server> {
+public class WildFly10ConfigFileDeploymentsMigration<S extends Server> {
 
     public interface EnvironmentProperties {
         /**
@@ -53,7 +54,7 @@ public class WildFly10StandaloneConfigFileDeploymentsMigration<S extends Server>
     public static final ServerMigrationTaskName SERVER_MIGRATION_TASK_NAME = new ServerMigrationTaskName.Builder().setName("deployments").build();
     public static final String SERVER_MIGRATION_TASK_DEPLOYMENT_REMOVAL_NAME = "remove-deployment";
 
-    public ServerMigrationTask getServerMigrationTask(final ServerPath<S> source, final WildFly10StandaloneServer target) {
+    public ServerMigrationTask getServerMigrationTask(final ServerPath<S> source, final WildFly10ConfigurationManagement target) {
         return new ServerMigrationTask() {
             @Override
             public ServerMigrationTaskName getName() {
@@ -86,7 +87,7 @@ public class WildFly10StandaloneConfigFileDeploymentsMigration<S extends Server>
         };
     }
 
-    private List<ModelNode> getDeployments(WildFly10StandaloneServer target, ServerMigrationTaskContext taskContext) throws IOException {
+    private List<ModelNode> getDeployments(WildFly10ConfigurationManagement target, ServerMigrationTaskContext taskContext) throws IOException {
         final ModelNode op = Util.createEmptyOperation(READ_CHILDREN_RESOURCES_OPERATION, pathAddress());
         op.get(CHILD_TYPE).set(DEPLOYMENT);
         op.get(RECURSIVE).set(true);
@@ -98,7 +99,7 @@ public class WildFly10StandaloneConfigFileDeploymentsMigration<S extends Server>
         return result.get(RESULT).asList();
     }
 
-    protected void migrateDeployment(final ModelNode deployment, final ServerPath<S> source, final WildFly10StandaloneServer target, final ServerMigrationTaskContext context) throws IOException {
+    protected void migrateDeployment(final ModelNode deployment, final ServerPath<S> source, final WildFly10ConfigurationManagement target, final ServerMigrationTaskContext context) throws IOException {
         final Property deploymentAsProperty = deployment.asProperty();
         final String deploymentName = deploymentAsProperty.getName();
         final ServerMigrationTaskName taskName = new ServerMigrationTaskName.Builder().setName(SERVER_MIGRATION_TASK_DEPLOYMENT_REMOVAL_NAME).addAttribute("name", deploymentName).build();

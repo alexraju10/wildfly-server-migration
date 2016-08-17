@@ -18,9 +18,9 @@ package org.jboss.migration.wfly8.to.wfly10.standalone;
 import org.jboss.migration.core.ServerMigrationTask;
 import org.jboss.migration.core.ServerPath;
 import org.jboss.migration.wfly10.WildFly10Server;
-import org.jboss.migration.wfly10.config.standalone.WildFly10StandaloneConfigFileDeploymentsMigration;
+import org.jboss.migration.wfly10.config.deployments.WildFly10ConfigFileDeploymentsMigration;
 import org.jboss.migration.wfly10.config.standalone.WildFly10StandaloneConfigFileMigration;
-import org.jboss.migration.wfly10.config.standalone.WildFly10StandaloneConfigFileSecurityRealmsMigration;
+import org.jboss.migration.wfly10.config.securityrealms.WildFly10ConfigFileSecurityRealmsMigration;
 import org.jboss.migration.wfly10.config.standalone.management.WildFly10StandaloneServer;
 import org.jboss.migration.wfly8.WildFly8Server;
 import org.jboss.migration.wfly8.to.wfly10.subsystem.WildFly8ToWildFly10ConfigFileSubsystemsMigration;
@@ -46,8 +46,8 @@ public class WildFly8ToWildFly10FullStandaloneConfigFileMigration extends WildFl
     protected List<ServerMigrationTask> getManagementResourcesSubtasks(final ServerPath<WildFly8Server> sourceConfig, final Path targetConfigFilePath, final WildFly10StandaloneServer standaloneServer) {
         final List<ServerMigrationTask> tasks = new ArrayList<>();
         tasks.add(WildFly8ToWildFly10ConfigFileSubsystemsMigration.INSTANCE.getManagementResourcesServerMigrationTask(targetConfigFilePath, standaloneServer.getSubsystemManagement()));
-        tasks.add(new WildFly10StandaloneConfigFileSecurityRealmsMigration().getServerMigrationTask(sourceConfig, standaloneServer));
-        tasks.add(new WildFly10StandaloneConfigFileDeploymentsMigration().getServerMigrationTask(sourceConfig, standaloneServer));
+        tasks.add(new WildFly10ConfigFileSecurityRealmsMigration().getServerMigrationTask(sourceConfig, standaloneServer.getSecurityRealmsManagement()));
+        tasks.add(new WildFly10ConfigFileDeploymentsMigration().getServerMigrationTask(sourceConfig, standaloneServer));
         return tasks;
     }
 }

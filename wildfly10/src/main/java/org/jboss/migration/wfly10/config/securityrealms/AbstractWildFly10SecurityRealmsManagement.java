@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.jboss.migration.wfly10.config.subsystem;
+package org.jboss.migration.wfly10.config.securityrealms;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -36,11 +36,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 /**
  * @author emmartins
  */
-public abstract class AbstractWildFly10SubsystemManagement implements WildFly10SubsystemManagement {
+public abstract class AbstractWildFly10SecurityRealmsManagement implements WildFly10SecurityRealmsManagement {
 
     private final WildFly10ConfigurationManagement configurationManagement;
 
-    public AbstractWildFly10SubsystemManagement(WildFly10ConfigurationManagement configurationManagement) {
+    public AbstractWildFly10SecurityRealmsManagement(WildFly10ConfigurationManagement configurationManagement) {
         this.configurationManagement = configurationManagement;
     }
 
@@ -52,30 +52,17 @@ public abstract class AbstractWildFly10SubsystemManagement implements WildFly10S
     }
 
     @Override
-    public PathAddress getSubsystemPathAddress(String subsystem) {
-        return getPathAddress(pathElement(SUBSYSTEM, subsystem));
+    public PathAddress getSecurityRealmPathAddress(String name) {
+        return getPathAddress(pathElement(SECURITY_REALM, name));
     }
 
     @Override
-    public ModelNode getSubsystem(String subsystem) throws IOException {
-        if (!getSubsystems().contains(subsystem)) {
-            return null;
-        }
-        final PathAddress address = getSubsystemPathAddress(subsystem);
-        final ModelNode op = Util.createEmptyOperation(READ_RESOURCE_OPERATION, address);
-        op.get(RECURSIVE).set(true);
-        final ModelNode result = configurationManagement.executeManagementOperation(op);
-        ServerMigrationLogger.ROOT_LOGGER.debugf("Op result %s", result.toString());
-        return result.get(RESULT);
-    }
-
-    @Override
-    public Set<String> getSubsystems() throws IOException {
+    public Set<String> getSecurityRealms() throws IOException {
         try {
             final ModelNode op = Util.createEmptyOperation(READ_CHILDREN_NAMES_OPERATION, getParentPathAddress());
-            op.get(CHILD_TYPE).set(SUBSYSTEM);
+            op.get(CHILD_TYPE).set(SECURITY_REALM);
             final ModelNode opResult = configurationManagement.executeManagementOperation(op);
-            ServerMigrationLogger.ROOT_LOGGER.debugf("Get subsystems Op result %s", opResult.toString());
+            ServerMigrationLogger.ROOT_LOGGER.debugf("Get security realms Op result %s", opResult.toString());
             Set<String> result = new HashSet<>();
             for (ModelNode resultNode : opResult.get(RESULT).asList()) {
                 result.add(resultNode.asString());
@@ -87,7 +74,7 @@ public abstract class AbstractWildFly10SubsystemManagement implements WildFly10S
                 final ModelNode opResult = configurationManagement.executeManagementOperation(op);
                 boolean childrenTypeFound = false;
                 for (ModelNode resultNode : opResult.get(RESULT).asList()) {
-                    if (SUBSYSTEM.equals(resultNode.asString())) {
+                    if (SECURITY_REALM.equals(resultNode.asString())) {
                         childrenTypeFound = true;
                         break;
                     }
@@ -103,10 +90,16 @@ public abstract class AbstractWildFly10SubsystemManagement implements WildFly10S
     }
 
     @Override
-    public void removeSubsystem(String subsystem) throws IOException {
-        final PathAddress address = getSubsystemPathAddress(subsystem);
-        final ModelNode op = Util.createRemoveOperation(address);
-        configurationManagement.executeManagementOperation(op);
+    public ModelNode getSecurityRealm(String name) throws IOException {
+        if (!getSecurityRealms().contains(name)) {
+            return null;
+        }
+        final PathAddress address = getSecurityRealmPathAddress(name);
+        final ModelNode op = Util.createEmptyOperation(READ_RESOURCE_OPERATION, address);
+        op.get(RECURSIVE).set(true);
+        final ModelNode result = configurationManagement.executeManagementOperation(op);
+        ServerMigrationLogger.ROOT_LOGGER.debugf("Op result %s", result.toString());
+        return result.get(RESULT);
     }
 
     @Override

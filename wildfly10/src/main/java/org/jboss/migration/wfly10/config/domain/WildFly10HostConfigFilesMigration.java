@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-package org.jboss.migration.wfly10.config.domain.management;
+package org.jboss.migration.wfly10.config.domain;
 
-import org.jboss.migration.wfly10.config.WildFly10ConfigurationManagement;
-import org.jboss.migration.wfly10.config.subsystem.WildFly10SubsystemManagement;
-
-import java.io.IOException;
-import java.util.Set;
+import org.jboss.migration.core.Server;
+import org.jboss.migration.wfly10.config.WildFly10ConfigFilesMigration;
 
 /**
+ * Implementation of a host config file migration.
  * @author emmartins
  */
-public interface WildFly10HostController extends WildFly10ConfigurationManagement {
-    WildFly10SubsystemManagement getSubsystemManagement(String profile);
-    Set<String> getProfiles() throws IOException;
-    Set<String> getHosts() throws IOException;
+public class WildFly10HostConfigFilesMigration<S extends Server> extends WildFly10ConfigFilesMigration<S> {
+
+    public WildFly10HostConfigFilesMigration(WildFly10HostConfigFileMigration<S> configFileMigration) {
+        super(configFileMigration);
+    }
 }

@@ -28,7 +28,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * An abstract JBoss {@link Server} impl, which is usable only as migration source.
@@ -55,6 +57,7 @@ public abstract class JBossServer<S extends JBossServer> extends AbstractServer 
     private final Path domainConfigDir;
     private final Path standaloneServerDir;
     private final Path standaloneConfigDir;
+    private final Map<String, Path> pathResolver;
 
     public JBossServer(String migrationName, ProductInfo productInfo, Path baseDir, MigrationEnvironment migrationEnvironment) {
         super(migrationName, productInfo, baseDir, migrationEnvironment);
@@ -79,6 +82,14 @@ public abstract class JBossServer<S extends JBossServer> extends AbstractServer 
             standaloneConfigDir = standaloneServerDir.resolve(standaloneConfigDir);
         }
         this.standaloneConfigDir = standaloneConfigDir;
+        this.pathResolver = new HashMap<>();
+        this.pathResolver.put("jboss.server.base.dir", standaloneServerDir);
+        this.pathResolver.put("jboss.server.config.dir", standaloneConfigDir);
+        this.pathResolver.put("jboss.server.data.dir", standaloneServerDir.resolve("data"));
+        this.pathResolver.put("jboss.server.log.dir", standaloneServerDir.resolve("log"));
+        this.pathResolver.put("jboss.domain.base.dir", domainBaseDir);
+        this.pathResolver.put("jboss.domain.config.dir", domainConfigDir);
+        this.pathResolver.put("jboss.domain.data.dir", domainBaseDir.resolve("data"));
     }
 
     protected String getFullEnvironmentPropertyName(String propertyName) {
@@ -158,5 +169,10 @@ public abstract class JBossServer<S extends JBossServer> extends AbstractServer 
 
     public Path getStandaloneConfigurationDir() {
         return standaloneConfigDir;
+    }
+
+    @Override
+    public Path resolvePath(String path) {
+        return pathResolver.get(path);
     }
 }

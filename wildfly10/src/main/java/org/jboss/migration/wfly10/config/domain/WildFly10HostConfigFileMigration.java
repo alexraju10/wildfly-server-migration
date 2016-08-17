@@ -30,19 +30,19 @@ import java.nio.file.Path;
  * Abstract implementation of a domain config file migration.
  * @author emmartins
  */
-public abstract class WildFly10DomainConfigFileMigration<S extends Server> extends WildFly10ConfigFileMigration<S, WildFly10HostController> {
+public abstract class WildFly10HostConfigFileMigration<S extends Server> extends WildFly10ConfigFileMigration<S, WildFly10HostController> {
 
-    public WildFly10DomainConfigFileMigration() {
-        super("domain");
+    public WildFly10HostConfigFileMigration() {
+        super("host");
     }
 
     @Override
     protected WildFly10HostController startConfiguration(Path targetConfigFilePath, WildFly10Server target, ServerMigrationTaskContext context) throws IOException {
         context.getServerMigrationContext().getConsoleWrapper().printf("%n%n");
         final String config = targetConfigFilePath.getFileName().toString();
-        context.getLogger().infof("Starting domain configuration %s", config);
-        final WildFly10HostController hostController = new EmbeddedWildFly10HostController(config, null, target);
-        hostController.start();
-        return hostController;
+        context.getLogger().infof("Starting host configuration %s", config);
+        final WildFly10HostController host = new EmbeddedWildFly10HostController(null, config, target);
+        host.start();
+        return host;
     }
 }

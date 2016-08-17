@@ -13,35 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.migration.eap6.to.eap7.standalone;
+
+package org.jboss.migration.eap6.to.eap7.management.interfaces;
 
 import org.jboss.migration.core.ServerMigrationTask;
 import org.jboss.migration.core.ServerMigrationTaskContext;
 import org.jboss.migration.core.ServerMigrationTaskName;
 import org.jboss.migration.core.ServerMigrationTaskResult;
-import org.jboss.migration.wfly10.config.standalone.management.WildFly10StandaloneServer;
+import org.jboss.migration.wfly10.config.WildFly10ConfigurationManagement;
 
 /**
- * Migration of EAP 6 socket bindings config.
- * @author emmartins
+ * Migration of EAP 6 management interfaces config.
+ *  @author emmartins
  */
-public class EAP6ToEAP7StandaloneConfigFileSocketBindingsMigration {
+public class EAP6ToEAP7ConfigFileManagementInterfacesMigration {
 
-    public static final String SERVER_MIGRATION_TASK_NAME_NAME = "socket-bindings";
+    public static final String SERVER_MIGRATION_TASK_NAME_NAME = "management-interfaces";
     public static final ServerMigrationTaskName SERVER_MIGRATION_TASK_NAME = new ServerMigrationTaskName.Builder().setName(SERVER_MIGRATION_TASK_NAME_NAME).build();
 
     public interface EnvironmentProperties {
         /**
-         * the prefix for the name of socket bindings related properties
+         * the prefix for the name of management interfaces related properties
          */
         String PROPERTIES_PREFIX = SERVER_MIGRATION_TASK_NAME_NAME + ".";
         /**
-         * Boolean property which if true skips migration of socket bindings
+         * Boolean property which if true skips migration of management interfaces
          */
         String SKIP = PROPERTIES_PREFIX + "skip";
     }
 
-    public ServerMigrationTask getServerMigrationTask(final WildFly10StandaloneServer target) {
+    public ServerMigrationTask getServerMigrationTask(final WildFly10ConfigurationManagement configuration) {
         return new ServerMigrationTask() {
             @Override
             public ServerMigrationTaskName getName() {
@@ -52,9 +53,9 @@ public class EAP6ToEAP7StandaloneConfigFileSocketBindingsMigration {
             public ServerMigrationTaskResult run(ServerMigrationTaskContext context) throws Exception {
                 if (!context.getServerMigrationContext().getMigrationEnvironment().getPropertyAsBoolean(EnvironmentProperties.SKIP, Boolean.FALSE)) {
                     context.getServerMigrationContext().getConsoleWrapper().printf("%n%n");
-                    context.getLogger().infof("Migrating socket bindings...");
-                    context.execute(new UpdateManagementHttpsSocketBinding(target));
-                    context.getLogger().info("Socket bindings migration done.");
+                    context.getLogger().infof("Migrating management interfaces...");
+                    context.execute(new EnableHttpInterfaceSupportForHttpUpgrade(configuration));
+                    context.getLogger().info("Management interfaces migration done.");
                 }
                 return context.hasSucessfulSubtasks() ? ServerMigrationTaskResult.SUCCESS : ServerMigrationTaskResult.SKIPPED;
             }

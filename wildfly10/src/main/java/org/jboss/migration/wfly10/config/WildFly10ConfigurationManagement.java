@@ -23,7 +23,6 @@ import org.jboss.migration.wfly10.config.subsystem.WildFly10ExtensionManagement;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
 
 /**
  * @author emmartins
@@ -32,10 +31,9 @@ public interface WildFly10ConfigurationManagement {
     void start();
     void stop();
     boolean isStarted();
-    ModelNode executeManagementOperation(ModelNode operation) throws IOException;
+    ModelNode executeManagementOperation(ModelNode operation) throws IOException, ManagementOperationException;
     WildFly10Server getServer();
-    List<ModelNode> getSecurityRealms() throws IOException;
     WildFly10ExtensionManagement getExtensionManagement();
-    Path resolvePath(String path)  throws IOException;
+    Path resolvePath(String path)  throws IOException, ManagementOperationException;
     ModelControllerClient getModelControllerClient();
 }

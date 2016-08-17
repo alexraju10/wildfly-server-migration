@@ -17,6 +17,7 @@
 package org.jboss.migration.wfly10.config.standalone.management;
 
 import org.jboss.migration.wfly10.config.WildFly10ConfigurationManagement;
+import org.jboss.migration.wfly10.config.securityrealms.WildFly10SecurityRealmsManagement;
 import org.jboss.migration.wfly10.config.subsystem.WildFly10SubsystemManagement;
 
 /**
@@ -24,4 +25,5 @@ import org.jboss.migration.wfly10.config.subsystem.WildFly10SubsystemManagement;
  */
 public interface WildFly10StandaloneServer extends WildFly10ConfigurationManagement {
     WildFly10SubsystemManagement getSubsystemManagement();
+    WildFly10SecurityRealmsManagement getSecurityRealmsManagement();
 }

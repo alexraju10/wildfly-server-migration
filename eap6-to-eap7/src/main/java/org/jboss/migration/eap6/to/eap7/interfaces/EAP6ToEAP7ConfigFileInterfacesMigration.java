@@ -13,22 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.migration.eap6.to.eap7.standalone;
+
+package org.jboss.migration.eap6.to.eap7.interfaces;
 
 import org.jboss.migration.core.ServerMigrationTask;
 import org.jboss.migration.core.ServerMigrationTaskContext;
 import org.jboss.migration.core.ServerMigrationTaskName;
 import org.jboss.migration.core.ServerMigrationTaskResult;
-import org.jboss.migration.eap6.to.eap7.EnableHttpInterfaceSupportForHttpUpgrade;
-import org.jboss.migration.wfly10.config.standalone.management.WildFly10StandaloneServer;
+import org.jboss.migration.wfly10.config.WildFly10ConfigurationManagement;
 
 /**
- * Migration of EAP 6 management interfaces config.
+ * Migration of EAP 6 interfaces config.
  *  @author emmartins
  */
-public class EAP6ToEAP7StandaloneConfigFileManagementInterfacesMigration {
+public class EAP6ToEAP7ConfigFileInterfacesMigration {
 
-    public static final String SERVER_MIGRATION_TASK_NAME_NAME = "management-interfaces";
+    public static final String SERVER_MIGRATION_TASK_NAME_NAME = "interfaces";
     public static final ServerMigrationTaskName SERVER_MIGRATION_TASK_NAME = new ServerMigrationTaskName.Builder().setName(SERVER_MIGRATION_TASK_NAME_NAME).build();
 
     public interface EnvironmentProperties {
@@ -42,7 +42,7 @@ public class EAP6ToEAP7StandaloneConfigFileManagementInterfacesMigration {
         String SKIP = PROPERTIES_PREFIX + "skip";
     }
 
-    public ServerMigrationTask getServerMigrationTask(final WildFly10StandaloneServer target) {
+    public ServerMigrationTask getServerMigrationTask(final WildFly10ConfigurationManagement configuration) {
         return new ServerMigrationTask() {
             @Override
             public ServerMigrationTaskName getName() {
@@ -53,9 +53,10 @@ public class EAP6ToEAP7StandaloneConfigFileManagementInterfacesMigration {
             public ServerMigrationTaskResult run(ServerMigrationTaskContext context) throws Exception {
                 if (!context.getServerMigrationContext().getMigrationEnvironment().getPropertyAsBoolean(EnvironmentProperties.SKIP, Boolean.FALSE)) {
                     context.getServerMigrationContext().getConsoleWrapper().printf("%n%n");
-                    context.getLogger().infof("Migrating management interfaces...");
-                    context.execute(new EnableHttpInterfaceSupportForHttpUpgrade(target));
-                    context.getLogger().info("Management interfaces migration done.");
+                    context.getLogger().infof("Migrating interfaces...");
+                    context.execute(new AddPrivateInterface(configuration));
+                    context.execute(new UpdateUnsecureInterface(configuration));
+                    context.getLogger().info("Interfaces migration done.");
                 }
                 return context.hasSucessfulSubtasks() ? ServerMigrationTaskResult.SUCCESS : ServerMigrationTaskResult.SKIPPED;
             }
