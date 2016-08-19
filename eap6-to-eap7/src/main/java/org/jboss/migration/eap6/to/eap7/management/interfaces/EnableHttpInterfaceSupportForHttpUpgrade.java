@@ -24,9 +24,9 @@ import org.jboss.migration.core.ServerMigrationTaskContext;
 import org.jboss.migration.core.ServerMigrationTaskName;
 import org.jboss.migration.core.ServerMigrationTaskResult;
 import org.jboss.migration.wfly10.config.WildFly10ConfigurationManagement;
+import org.jboss.migration.wfly10.config.management.interfaces.WildFly10ConfigFileManagementInterfacesMigration;
+import org.jboss.migration.wfly10.config.management.interfaces.WildFly10ManagementInterfacesManagement;
 
-import static org.jboss.as.controller.PathAddress.pathAddress;
-import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
@@ -42,18 +42,20 @@ public class EnableHttpInterfaceSupportForHttpUpgrade implements ServerMigration
         /**
          * the prefix for the name of the management-https socket binding related properties
          */
-        String PROPERTIES_PREFIX = EAP6ToEAP7ConfigFileManagementInterfacesMigration.EnvironmentProperties.PROPERTIES_PREFIX + SERVER_MIGRATION_TASK_NAME_NAME + ".";
+        String PROPERTIES_PREFIX = WildFly10ConfigFileManagementInterfacesMigration.EnvironmentProperties.PROPERTIES_PREFIX + SERVER_MIGRATION_TASK_NAME_NAME + ".";
         /**
          * Boolean property which if true skips the task execution
          */
         String SKIP = PROPERTIES_PREFIX + "skip";
     }
 
-    private final WildFly10ConfigurationManagement configuration;
+    private static final String INTERFACE_NAME = "http-interface";
+
+    private final WildFly10ManagementInterfacesManagement managementInterfacesManagement;
 
 
-    public EnableHttpInterfaceSupportForHttpUpgrade(final WildFly10ConfigurationManagement configuration) {
-        this.configuration = configuration;
+    public EnableHttpInterfaceSupportForHttpUpgrade(final WildFly10ManagementInterfacesManagement managementInterfacesManagement) {
+        this.managementInterfacesManagement = managementInterfacesManagement;
     }
 
     @Override
@@ -64,25 +66,22 @@ public class EnableHttpInterfaceSupportForHttpUpgrade implements ServerMigration
     @Override
     public ServerMigrationTaskResult run(ServerMigrationTaskContext context) throws Exception {
         if (!context.getServerMigrationContext().getMigrationEnvironment().getPropertyAsBoolean(EnvironmentProperties.SKIP, Boolean.FALSE)) {
+            final WildFly10ConfigurationManagement configuration = managementInterfacesManagement.getConfigurationManagement();
             final boolean configurationStarted = configuration.isStarted();
             if (!configurationStarted) {
                 configuration.start();
             }
             try {
-                final ModelNode op = Util.createEmptyOperation(READ_CHILDREN_NAMES_OPERATION, pathAddress(pathElement(CORE_SERVICE, MANAGEMENT)));
-                op.get(CHILD_TYPE).set(MANAGEMENT_INTERFACE);
-                final ModelNode opResult = configuration.executeManagementOperation(op);
-                for (ModelNode resultItem : opResult.get(RESULT).asList()) {
-                    if (resultItem.asString().equals("http-interface")) {
-                        // http interface found, turn on http upgrade
-                        final PathAddress pathAddress = pathAddress(pathElement(CORE_SERVICE, MANAGEMENT), pathElement(MANAGEMENT_INTERFACE, "http-interface"));
-                        final ModelNode writeAttrOp = Util.createEmptyOperation(WRITE_ATTRIBUTE_OPERATION, pathAddress);
-                        writeAttrOp.get(NAME).set("http-upgrade-enabled");
-                        writeAttrOp.get(VALUE).set(true);
-                        configuration.executeManagementOperation(writeAttrOp);
-                        context.getLogger().infof("Activated HTTP Management Interface's support for HTTP Upgrade.");
-                        return ServerMigrationTaskResult.SUCCESS;
-                    }
+                if (managementInterfacesManagement.getManagementInterfaces().contains(INTERFACE_NAME)) {
+                    // http interface found, turn on http upgrade
+                    final PathAddress pathAddress = managementInterfacesManagement.getManagementInterfacePathAddress(INTERFACE_NAME);
+                    //pathAddress(pathElement(CORE_SERVICE, MANAGEMENT), pathElement(MANAGEMENT_INTERFACE, "http-interface"));
+                    final ModelNode writeAttrOp = Util.createEmptyOperation(WRITE_ATTRIBUTE_OPERATION, pathAddress);
+                    writeAttrOp.get(NAME).set("http-upgrade-enabled");
+                    writeAttrOp.get(VALUE).set(true);
+                    configuration.executeManagementOperation(writeAttrOp);
+                    context.getLogger().infof("Activated HTTP Management Interface's support for HTTP Upgrade.");
+                    return ServerMigrationTaskResult.SUCCESS;
                 }
             } finally {
                 if (!configurationStarted) {
@@ -91,5 +90,12 @@ public class EnableHttpInterfaceSupportForHttpUpgrade implements ServerMigration
             }
         }
         return ServerMigrationTaskResult.SKIPPED;
+    }
+
+    public static class SubtaskFactory implements WildFly10ConfigFileManagementInterfacesMigration.SubtaskFactory {
+        @Override
+        public ServerMigrationTask getSubtask(WildFly10ManagementInterfacesManagement managementInterfacesManagement) {
+            return new EnableHttpInterfaceSupportForHttpUpgrade(managementInterfacesManagement);
+        }
     }
 }

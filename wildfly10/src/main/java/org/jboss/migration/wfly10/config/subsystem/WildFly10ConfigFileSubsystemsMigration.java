@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.jboss.migration.wfly10.config;
+package org.jboss.migration.wfly10.config.subsystem;
 
 import org.jboss.migration.core.Server;
 import org.jboss.migration.core.ServerMigrationTask;
@@ -26,10 +26,6 @@ import org.jboss.migration.core.env.MigrationEnvironment;
 import org.jboss.migration.core.util.xml.XMLFileFilter;
 import org.jboss.migration.core.util.xml.XMLFiles;
 import org.jboss.migration.wfly10.WildFly10Server;
-import org.jboss.migration.wfly10.config.subsystem.EnvironmentProperties;
-import org.jboss.migration.wfly10.config.subsystem.WildFly10Extension;
-import org.jboss.migration.wfly10.config.subsystem.WildFly10Subsystem;
-import org.jboss.migration.wfly10.config.subsystem.WildFly10SubsystemManagement;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;

@@ -16,7 +16,7 @@
 
 package org.jboss.migration.wfly8.to.wfly10.subsystem;
 
-import org.jboss.migration.wfly10.config.WildFly10ConfigFileSubsystemsMigration;
+import org.jboss.migration.wfly10.config.subsystem.WildFly10ConfigFileSubsystemsMigration;
 import org.jboss.migration.wfly10.config.subsystem.AddSubsystem;
 import org.jboss.migration.wfly10.config.subsystem.WildFly10Extension;
 import org.jboss.migration.wfly10.config.subsystem.WildFly10ExtensionBuilder;

@@ -20,6 +20,8 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.migration.wfly10.WildFly10Server;
 import org.jboss.migration.wfly10.config.AbstractWildFly10ConfigurationManagement;
+import org.jboss.migration.wfly10.config.management.interfaces.AbstractWildFly10ManagementInterfacesManagement;
+import org.jboss.migration.wfly10.config.management.interfaces.WildFly10ManagementInterfacesManagement;
 import org.jboss.migration.wfly10.config.securityrealms.AbstractWildFly10SecurityRealmsManagement;
 import org.jboss.migration.wfly10.config.securityrealms.WildFly10SecurityRealmsManagement;
 import org.jboss.migration.wfly10.config.subsystem.AbstractWildFly10SubsystemManagement;
@@ -45,6 +47,7 @@ public class EmbeddedWildFly10StandaloneServer extends AbstractWildFly10Configur
     private StandaloneServer standaloneServer;
     private final WildFly10SubsystemManagement subsystemManagement;
     private final WildFly10SecurityRealmsManagement securityRealmsManagement;
+    private final WildFly10ManagementInterfacesManagement managementInterfacesManagement;
 
     public EmbeddedWildFly10StandaloneServer(String config, WildFly10Server server) {
         super(server);
@@ -55,10 +58,17 @@ public class EmbeddedWildFly10StandaloneServer extends AbstractWildFly10Configur
                 return null;
             }
         };
+        final PathAddress managementCoreServicePathAddress = pathAddress(pathElement(CORE_SERVICE, MANAGEMENT));
         this.securityRealmsManagement = new AbstractWildFly10SecurityRealmsManagement(this) {
             @Override
             protected PathAddress getParentPathAddress() {
-                return pathAddress(pathElement(CORE_SERVICE, MANAGEMENT));
+                return managementCoreServicePathAddress;
+            }
+        };
+        this.managementInterfacesManagement = new AbstractWildFly10ManagementInterfacesManagement(this) {
+            @Override
+            protected PathAddress getParentPathAddress() {
+                return managementCoreServicePathAddress;
             }
         };
     }
@@ -94,5 +104,10 @@ public class EmbeddedWildFly10StandaloneServer extends AbstractWildFly10Configur
     @Override
     protected Set<String> getSubsystems() throws IOException {
         return getSubsystemManagement().getSubsystems();
+    }
+
+    @Override
+    public WildFly10ManagementInterfacesManagement getManagementInterfacesManagement() {
+        return managementInterfacesManagement;
     }
 }

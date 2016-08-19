@@ -14,18 +14,21 @@
  * limitations under the License.
  */
 
-package org.jboss.migration.wfly10.config.domain.management;
+package org.jboss.migration.wfly10.config.domain.servergroup;
 
+import org.jboss.as.controller.PathAddress;
+import org.jboss.dmr.ModelNode;
 import org.jboss.migration.wfly10.config.WildFly10ConfigurationManagement;
-import org.jboss.migration.wfly10.config.management.interfaces.WildFly10ManagementInterfacesManagement;
-import org.jboss.migration.wfly10.config.securityrealms.WildFly10SecurityRealmsManagement;
-import org.jboss.migration.wfly10.config.subsystem.WildFly10SubsystemManagement;
+
+import java.io.IOException;
+import java.util.Set;
 
 /**
  * @author emmartins
  */
-public interface WildFly10Host extends WildFly10ConfigurationManagement {
-    WildFly10SubsystemManagement getSubsystemManagement();
-    WildFly10SecurityRealmsManagement getSecurityRealmsManagement();
-    WildFly10ManagementInterfacesManagement getManagementInterfacesManagement();
+public interface WildFly10ServerGroupsManagement {
+    WildFly10ConfigurationManagement getConfigurationManagement();
+    ModelNode getServerGroup(String name) throws IOException;
+    Set<String> getServerGroups() throws IOException;
+    PathAddress getServerGroupPathAddress(String name);
 }

@@ -17,7 +17,7 @@
 package org.jboss.migration.eap6.to.eap7.subsystem;
 
 import org.jboss.migration.eap.EAP6Server;
-import org.jboss.migration.wfly10.config.WildFly10ConfigFileSubsystemsMigration;
+import org.jboss.migration.wfly10.config.subsystem.WildFly10ConfigFileSubsystemsMigration;
 import org.jboss.migration.wfly10.config.subsystem.WildFly10Extension;
 import org.jboss.migration.wfly10.config.subsystem.WildFly10ExtensionBuilder;
 import org.jboss.migration.wfly10.config.subsystem.WildFly10ExtensionNames;

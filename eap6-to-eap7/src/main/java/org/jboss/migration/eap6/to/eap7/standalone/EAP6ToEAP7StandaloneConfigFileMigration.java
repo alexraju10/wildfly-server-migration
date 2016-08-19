@@ -18,10 +18,11 @@ package org.jboss.migration.eap6.to.eap7.standalone;
 import org.jboss.migration.core.ServerMigrationTask;
 import org.jboss.migration.core.ServerPath;
 import org.jboss.migration.eap.EAP6Server;
-import org.jboss.migration.eap6.to.eap7.management.interfaces.EAP6ToEAP7ConfigFileManagementInterfacesMigration;
+import org.jboss.migration.eap6.to.eap7.management.interfaces.EnableHttpInterfaceSupportForHttpUpgrade;
 import org.jboss.migration.eap6.to.eap7.subsystem.EAP6ToEAP7ConfigFileSubsystemsMigration;
 import org.jboss.migration.wfly10.WildFly10Server;
 import org.jboss.migration.wfly10.config.deployments.WildFly10ConfigFileDeploymentsMigration;
+import org.jboss.migration.wfly10.config.management.interfaces.WildFly10ConfigFileManagementInterfacesMigration;
 import org.jboss.migration.wfly10.config.securityrealms.WildFly10ConfigFileSecurityRealmsMigration;
 import org.jboss.migration.wfly10.config.standalone.WildFly10StandaloneConfigFileMigration;
 import org.jboss.migration.wfly10.config.standalone.management.WildFly10StandaloneServer;
@@ -36,6 +37,10 @@ import java.util.List;
  */
 public class EAP6ToEAP7StandaloneConfigFileMigration extends WildFly10StandaloneConfigFileMigration<EAP6Server> {
 
+    private final WildFly10ConfigFileManagementInterfacesMigration managementInterfacesMigration = new WildFly10ConfigFileManagementInterfacesMigration.Builder()
+            .addSubtaskFactory(new EnableHttpInterfaceSupportForHttpUpgrade.SubtaskFactory())
+            .build();
+
     @Override
     protected List<ServerMigrationTask> getXMLConfigurationSubtasks(ServerPath<EAP6Server> sourceConfig, Path targetConfigFilePath, WildFly10Server target) {
         final List<ServerMigrationTask> tasks = new ArrayList<>();
@@ -48,7 +53,7 @@ public class EAP6ToEAP7StandaloneConfigFileMigration extends WildFly10Standalone
         final List<ServerMigrationTask> tasks = new ArrayList<>();
         tasks.add(EAP6ToEAP7ConfigFileSubsystemsMigration.INSTANCE.getManagementResourcesServerMigrationTask(targetConfigFilePath, configuration.getSubsystemManagement()));
         tasks.add(new WildFly10ConfigFileSecurityRealmsMigration().getServerMigrationTask(sourceConfig, configuration.getSecurityRealmsManagement()));
-        tasks.add(new EAP6ToEAP7ConfigFileManagementInterfacesMigration().getServerMigrationTask(configuration));
+        tasks.add(managementInterfacesMigration.getServerMigrationTask(configuration.getManagementInterfacesManagement()));
         tasks.add(new EAP6ToEAP7StandaloneConfigFileSocketBindingsMigration().getServerMigrationTask(configuration));
         tasks.add(new WildFly10ConfigFileDeploymentsMigration().getServerMigrationTask(sourceConfig, configuration));
         return tasks;

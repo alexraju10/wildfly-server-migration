@@ -22,8 +22,8 @@ import org.jboss.migration.core.ServerMigrationTaskContext;
 import org.jboss.migration.core.ServerMigrationTaskName;
 import org.jboss.migration.core.ServerMigrationTaskResult;
 import org.jboss.migration.core.ServerPath;
-import org.jboss.migration.wfly10.config.WildFly10ConfigFileSubsystemsMigration;
 import org.jboss.migration.wfly10.config.domain.management.WildFly10HostController;
+import org.jboss.migration.wfly10.config.subsystem.WildFly10ConfigFileSubsystemsMigration;
 
 import java.nio.file.Path;
 import java.util.Set;

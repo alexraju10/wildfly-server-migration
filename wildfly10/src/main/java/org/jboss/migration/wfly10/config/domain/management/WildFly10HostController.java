@@ -17,6 +17,7 @@
 package org.jboss.migration.wfly10.config.domain.management;
 
 import org.jboss.migration.wfly10.config.WildFly10ConfigurationManagement;
+import org.jboss.migration.wfly10.config.domain.servergroup.WildFly10ServerGroupsManagement;
 import org.jboss.migration.wfly10.config.subsystem.WildFly10SubsystemManagement;
 
 import java.io.IOException;
@@ -29,4 +30,5 @@ public interface WildFly10HostController extends WildFly10ConfigurationManagemen
     WildFly10SubsystemManagement getSubsystemManagement(String profile);
     Set<String> getProfiles() throws IOException;
     Set<String> getHosts() throws IOException;
+    WildFly10ServerGroupsManagement getServerGroupsManagement();
 }

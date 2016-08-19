@@ -19,6 +19,8 @@ package org.jboss.migration.wfly10.config.domain.management;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.migration.wfly10.config.AbstractWildFly10ConfigurationManagement;
+import org.jboss.migration.wfly10.config.management.interfaces.AbstractWildFly10ManagementInterfacesManagement;
+import org.jboss.migration.wfly10.config.management.interfaces.WildFly10ManagementInterfacesManagement;
 import org.jboss.migration.wfly10.config.securityrealms.AbstractWildFly10SecurityRealmsManagement;
 import org.jboss.migration.wfly10.config.securityrealms.WildFly10SecurityRealmsManagement;
 import org.jboss.migration.wfly10.config.subsystem.AbstractWildFly10ExtensionManagement;
@@ -43,6 +45,7 @@ public class EmbeddedWildFly10Host extends AbstractWildFly10ConfigurationManagem
     private final WildFly10SubsystemManagement subsystemManagement;
     private final WildFly10SecurityRealmsManagement securityRealmsManagement;
     private final WildFly10ExtensionManagement extensionManagement;
+    private final WildFly10ManagementInterfacesManagement managementInterfacesManagement;
 
     public EmbeddedWildFly10Host(WildFly10HostController hostController, String host) {
         super(hostController.getServer());
@@ -65,11 +68,17 @@ public class EmbeddedWildFly10Host extends AbstractWildFly10ConfigurationManagem
                 return hostPathAddress;
             }
         };
+        final PathAddress managementCoreServicePathAddress = hostPathAddress.append(pathElement(CORE_SERVICE, MANAGEMENT));
         this.securityRealmsManagement = new AbstractWildFly10SecurityRealmsManagement(this) {
-            private final PathAddress parentPathAddress = hostPathAddress.append(pathElement(CORE_SERVICE, MANAGEMENT));
             @Override
             protected PathAddress getParentPathAddress() {
-                return parentPathAddress;
+                return managementCoreServicePathAddress;
+            }
+        };
+        this.managementInterfacesManagement = new AbstractWildFly10ManagementInterfacesManagement(this) {
+            @Override
+            protected PathAddress getParentPathAddress() {
+                return managementCoreServicePathAddress;
             }
         };
     }
@@ -101,5 +110,10 @@ public class EmbeddedWildFly10Host extends AbstractWildFly10ConfigurationManagem
     @Override
     public WildFly10ExtensionManagement getExtensionManagement() {
         return extensionManagement;
+    }
+
+    @Override
+    public WildFly10ManagementInterfacesManagement getManagementInterfacesManagement() {
+        return managementInterfacesManagement;
     }
 }

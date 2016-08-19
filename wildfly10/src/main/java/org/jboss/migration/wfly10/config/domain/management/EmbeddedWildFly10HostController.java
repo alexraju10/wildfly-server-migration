@@ -24,6 +24,8 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.migration.core.logger.ServerMigrationLogger;
 import org.jboss.migration.wfly10.WildFly10Server;
 import org.jboss.migration.wfly10.config.AbstractWildFly10ConfigurationManagement;
+import org.jboss.migration.wfly10.config.domain.servergroup.WildFly10ServerGroupsManagement;
+import org.jboss.migration.wfly10.config.domain.servergroup.WildFly10ServerGroupsManagementImpl;
 import org.jboss.migration.wfly10.config.subsystem.AbstractWildFly10SubsystemManagement;
 import org.jboss.migration.wfly10.config.subsystem.WildFly10SubsystemManagement;
 import org.wildfly.core.embedded.EmbeddedProcessFactory;
@@ -46,11 +48,14 @@ public class EmbeddedWildFly10HostController extends AbstractWildFly10Configurat
     private final String domainConfig;
     private final String hostConfig;
     private HostController hostController;
+    private final WildFly10ServerGroupsManagement serverGroupsManagement;
+
 
     public EmbeddedWildFly10HostController(String domainConfig, String hostConfig, WildFly10Server server) {
         super(server);
         this.domainConfig = domainConfig;
         this.hostConfig = hostConfig;
+        this.serverGroupsManagement = new WildFly10ServerGroupsManagementImpl(this);
     }
 
     @Override
@@ -121,5 +126,10 @@ public class EmbeddedWildFly10HostController extends AbstractWildFly10Configurat
             result.add(resultNode.asString());
         }
         return result;
+    }
+
+    @Override
+    public WildFly10ServerGroupsManagement getServerGroupsManagement() {
+        return serverGroupsManagement;
     }
 }

@@ -19,10 +19,12 @@ package org.jboss.migration.eap6.to.eap7.domain;
 import org.jboss.migration.core.ServerMigrationTask;
 import org.jboss.migration.core.ServerPath;
 import org.jboss.migration.eap.EAP6Server;
+import org.jboss.migration.eap6.to.eap7.management.interfaces.EnableHttpInterfaceSupportForHttpUpgrade;
 import org.jboss.migration.eap6.to.eap7.subsystem.AddJmxSubsystem;
 import org.jboss.migration.eap6.to.eap7.subsystem.EAP6ToEAP7HostSubsystemsMigration;
 import org.jboss.migration.wfly10.config.domain.WildFly10HostConfigFileHostsMigration;
 import org.jboss.migration.wfly10.config.domain.management.WildFly10Host;
+import org.jboss.migration.wfly10.config.management.interfaces.WildFly10ConfigFileManagementInterfacesMigration;
 import org.jboss.migration.wfly10.config.securityrealms.WildFly10ConfigFileSecurityRealmsMigration;
 import org.jboss.migration.wfly10.config.subsystem.WildFly10Extension;
 import org.jboss.migration.wfly10.config.subsystem.WildFly10ExtensionBuilder;
@@ -43,11 +45,16 @@ public class EAP6ToEAP7HostConfigFileHostsMigration extends WildFly10HostConfigF
             .addNewSubsystem(WildFly10SubsystemNames.JMX, AddJmxSubsystem.INSTANCE)
             .build();
 
+    private final WildFly10ConfigFileManagementInterfacesMigration managementInterfacesMigration = new WildFly10ConfigFileManagementInterfacesMigration.Builder()
+            .addSubtaskFactory(new EnableHttpInterfaceSupportForHttpUpgrade.SubtaskFactory())
+            .build();
+
     @Override
     protected List<ServerMigrationTask> getSubtasks(ServerPath<EAP6Server> sourceConfig, Path targetConfigFilePath, WildFly10Host configuration) {
         final List<ServerMigrationTask> tasks = new ArrayList<>();
         tasks.add(EAP6ToEAP7HostSubsystemsMigration.INSTANCE.getManagementResourcesServerMigrationTask(targetConfigFilePath, configuration.getSubsystemManagement()));
         tasks.add(new WildFly10ConfigFileSecurityRealmsMigration().getServerMigrationTask(sourceConfig, configuration.getSecurityRealmsManagement()));
+        tasks.add(managementInterfacesMigration.getServerMigrationTask(configuration.getManagementInterfacesManagement()));
         return tasks;
     }
 }

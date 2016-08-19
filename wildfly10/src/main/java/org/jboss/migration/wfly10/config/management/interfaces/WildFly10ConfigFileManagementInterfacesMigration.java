@@ -14,22 +14,31 @@
  * limitations under the License.
  */
 
-package org.jboss.migration.eap6.to.eap7.management.interfaces;
+package org.jboss.migration.wfly10.config.management.interfaces;
 
 import org.jboss.migration.core.ServerMigrationTask;
 import org.jboss.migration.core.ServerMigrationTaskContext;
 import org.jboss.migration.core.ServerMigrationTaskName;
 import org.jboss.migration.core.ServerMigrationTaskResult;
-import org.jboss.migration.wfly10.config.WildFly10ConfigurationManagement;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
- * Migration of EAP 6 management interfaces config.
+ * Migration of management interfaces config.
  *  @author emmartins
  */
-public class EAP6ToEAP7ConfigFileManagementInterfacesMigration {
+public class WildFly10ConfigFileManagementInterfacesMigration {
 
     public static final String SERVER_MIGRATION_TASK_NAME_NAME = "management-interfaces";
     public static final ServerMigrationTaskName SERVER_MIGRATION_TASK_NAME = new ServerMigrationTaskName.Builder().setName(SERVER_MIGRATION_TASK_NAME_NAME).build();
+
+    private final List<SubtaskFactory> subtaskFactories;
+
+    private WildFly10ConfigFileManagementInterfacesMigration(List<SubtaskFactory> subtaskFactories) {
+        this.subtaskFactories = subtaskFactories;
+    }
 
     public interface EnvironmentProperties {
         /**
@@ -42,7 +51,7 @@ public class EAP6ToEAP7ConfigFileManagementInterfacesMigration {
         String SKIP = PROPERTIES_PREFIX + "skip";
     }
 
-    public ServerMigrationTask getServerMigrationTask(final WildFly10ConfigurationManagement configuration) {
+    public ServerMigrationTask getServerMigrationTask(final WildFly10ManagementInterfacesManagement managementInterfacesManagement) {
         return new ServerMigrationTask() {
             @Override
             public ServerMigrationTaskName getName() {
@@ -54,11 +63,34 @@ public class EAP6ToEAP7ConfigFileManagementInterfacesMigration {
                 if (!context.getServerMigrationContext().getMigrationEnvironment().getPropertyAsBoolean(EnvironmentProperties.SKIP, Boolean.FALSE)) {
                     context.getServerMigrationContext().getConsoleWrapper().printf("%n%n");
                     context.getLogger().infof("Migrating management interfaces...");
-                    context.execute(new EnableHttpInterfaceSupportForHttpUpgrade(configuration));
+                    for (SubtaskFactory subtaskFactory : subtaskFactories) {
+                        final ServerMigrationTask subtask = subtaskFactory.getSubtask(managementInterfacesManagement);
+                        if (subtask != null) {
+                            context.execute(subtask);
+                        }
+                    }
                     context.getLogger().info("Management interfaces migration done.");
                 }
                 return context.hasSucessfulSubtasks() ? ServerMigrationTaskResult.SUCCESS : ServerMigrationTaskResult.SKIPPED;
             }
         };
+    }
+
+    public interface SubtaskFactory {
+        ServerMigrationTask getSubtask(WildFly10ManagementInterfacesManagement managementInterfacesManagement);
+    }
+
+    public static class Builder {
+
+        private final List<SubtaskFactory> subtaskFactories = new ArrayList<>();
+
+        public Builder addSubtaskFactory(SubtaskFactory subtaskFactory) {
+            subtaskFactories.add(subtaskFactory);
+            return this;
+        }
+
+        public WildFly10ConfigFileManagementInterfacesMigration build() {
+            return new WildFly10ConfigFileManagementInterfacesMigration(Collections.unmodifiableList(subtaskFactories));
+        }
     }
 }

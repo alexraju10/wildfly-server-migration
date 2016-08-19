@@ -19,6 +19,7 @@ package org.jboss.migration.eap6.to.eap7.domain;
 import org.jboss.migration.core.ServerMigrationTask;
 import org.jboss.migration.core.ServerPath;
 import org.jboss.migration.eap.EAP6Server;
+import org.jboss.migration.eap6.to.eap7.domain.servergroup.EAP6ToEAP7DomainConfigServerGroupsMigration;
 import org.jboss.migration.eap6.to.eap7.interfaces.EAP6ToEAP7ConfigFileInterfacesMigration;
 import org.jboss.migration.eap6.to.eap7.subsystem.EAP6ToEAP7ConfigFileSubsystemsMigration;
 import org.jboss.migration.wfly10.WildFly10Server;
@@ -37,6 +38,7 @@ import java.util.List;
 public class EAP6ToEAP7DomainConfigFileMigration extends WildFly10DomainConfigFileMigration<EAP6Server> {
 
     private final WildFly10DomainConfigFileProfilesMigration profilesMigration = new WildFly10DomainConfigFileProfilesMigration();
+    private final EAP6ToEAP7DomainConfigServerGroupsMigration serverGroupsMigration = new EAP6ToEAP7DomainConfigServerGroupsMigration();
 
     @Override
     protected List<ServerMigrationTask> getXMLConfigurationSubtasks(ServerPath<EAP6Server> sourceConfig, Path targetConfigFilePath, WildFly10Server target) {
@@ -49,6 +51,7 @@ public class EAP6ToEAP7DomainConfigFileMigration extends WildFly10DomainConfigFi
     protected List<ServerMigrationTask> getManagementResourcesSubtasks(ServerPath<EAP6Server> sourceConfig, Path targetConfigFilePath, WildFly10HostController configurationManagement) {
         final List<ServerMigrationTask> tasks = new ArrayList<>();
         tasks.add(profilesMigration.getServerMigrationTask(sourceConfig, targetConfigFilePath, configurationManagement, EAP6ToEAP7ConfigFileSubsystemsMigration.INSTANCE));
+        tasks.add(serverGroupsMigration.getServerMigrationTask(configurationManagement.getServerGroupsManagement()));
         tasks.add(new EAP6ToEAP7ConfigFileInterfacesMigration().getServerMigrationTask(configurationManagement));
         return tasks;
     }
